@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const request = axios.create({
-  url: '',
+  baseURL: 'https://shop.fed.lagounews.com/api',
   timeout: 2 * 1000
 })
 
