@@ -6,3 +6,9 @@ export const getProductList = (params) => request({
   url:'/products',
   params
 })
+
+// 获取商品详情
+export const getProductDetail = (productId) => request({
+  method:'GET',
+  url:`/product/detail/${productId}`
+})

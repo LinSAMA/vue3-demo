@@ -42,6 +42,12 @@ const routes = [
     path: '/user',
     component: () => import('@/views/User/index.vue')
   },
+  {
+    name: 'product',
+    path: '/product/:productId',
+    component: () => import('@/views/Product/index.vue'),
+    props:true
+  },
 ]
 
 const router = createRouter({
