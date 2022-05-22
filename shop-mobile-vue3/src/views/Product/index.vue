@@ -1,7 +1,7 @@
 <template>
   <div class="product">
-    <van-nav-bar left-arrow fixed />
-    <van-tabs v-model:active="active" swipeable>
+    <van-nav-bar left-arrow fixed  @click-left="onClickBack"/>
+    <van-tabs v-model:active="active" scrollspy sticky>
       <van-tab title="商品">
         <!-- 轮播图 -->
         <van-swipe :autoplay="3000" indicator-color="white">
@@ -30,9 +30,20 @@
           </template>
         </van-cell>
         <!-- 规格区域 -->
-        <van-cell></van-cell>
+        <van-cell is-link class="sku-window">
+          <template #title>
+            <span>已选择：{{ reply?.sku }}</span>
+          </template>
+        </van-cell>
       </van-tab>
-      <van-tab title="评价">2</van-tab>
+      <van-tab title="评价">
+        <!-- 评价详情 -->
+        <van-cell-group class="comment">
+          <van-cell :title="replyInfo" :value="replyRate" is-link></van-cell>
+          <!-- 评价组件 -->
+          <comment-item :reply="reply" v-if="replyCount!==0"></comment-item>
+        </van-cell-group>
+      </van-tab>
       <van-tab title="推荐">3</van-tab>
       <van-tab title="详情">4</van-tab>
     </van-tabs>
@@ -42,6 +53,7 @@
 
 <script setup>
 import layoutFooter from "@/components/LayoutFooter.vue";
+import commentItem from "@/components/CommentItem.vue";
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { getProductDetail } from "@/api/product";
@@ -54,6 +66,12 @@ const { productId } = defineProps({
 });
 
 const router = useRouter();
+// 返回首页
+const onClickBack = () => {
+  return router.push({
+    name:'home'
+  })
+}
 
 // 获取商品详情
 const productDetailData = ref({});
@@ -74,10 +92,16 @@ initProductDetailData();
 const storeInfo = computed(() => productDetailData.value.storeInfo);
 // 轮播图
 const sliderData = computed(() => storeInfo.value?.slider_image);
+// 评价
+const replyCount = computed(() => productDetailData.value.replyCount || 0);
+const replyInfo = computed(() => `用户评价(${replyCount.value})`);
+const replyChance = computed(() => productDetailData.value.replyChance || 0);
+const replyRate = computed(() => `${replyChance.value}%好评率`);
+const reply = computed(() => productDetailData.value.reply);
 </script>
 <style lang="scss" scoped>
 .product {
-  background-color: #ccc;
+  background-color: #f2f2f2;
   :deep(.van-tabs__wrap) {
     width: 80%;
     position: fixed;
@@ -93,6 +117,7 @@ const sliderData = computed(() => storeInfo.value?.slider_image);
     width: 375px;
   }
   .product-header {
+    margin-bottom: 10px;
     .price {
       font-size: 24px;
       font-weight: 700;
@@ -114,6 +139,9 @@ const sliderData = computed(() => storeInfo.value?.slider_image);
       display: flex;
       justify-content: space-between;
     }
+  }
+  .sku-window {
+    margin-bottom: 10px;
   }
 }
 </style>
