@@ -48,6 +48,12 @@ const routes = [
     component: () => import('@/views/Product/index.vue'),
     props:true
   },
+  {
+    name: 'comment',
+    path: '/comment/:productId',
+    component: () => import('@/views/Comment/index.vue'),
+    props:true
+  },
 ]
 
 const router = createRouter({
