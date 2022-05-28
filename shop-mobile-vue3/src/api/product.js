@@ -1,3 +1,4 @@
+// 产品相关 api
 import request from '@/utils/request'
 
 // 请求商品列表数据
@@ -25,3 +26,5 @@ export const getCommentByType = (productId,params) => request({
   url:`/reply/list/${productId}`,
   params
 })
+
+// 

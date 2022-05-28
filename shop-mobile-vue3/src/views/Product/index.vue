@@ -75,7 +75,7 @@
             :to="{
               name: 'comment',
               params: {
-                productId
+                productId,
               },
             }"
           ></van-cell>
@@ -86,7 +86,7 @@
       <van-tab title="推荐">
         <van-cell class="commend">
           <p class="title">推荐商品</p>
-          <van-grid column-num="3" border="false">
+          <van-grid column-num="3" :border="false">
             <van-grid-item
               v-for="(item, index) in productList"
               :key="item + index"
@@ -106,17 +106,33 @@
         <div class="description" v-html="storeInfo?.description"></div>
       </van-tab>
     </van-tabs>
-    <layout-footer></layout-footer>
+    <!-- 购物车 -->
+    <van-action-bar>
+      <van-action-bar-icon icon="chat-o" text="客服" color="#ee0a24" />
+      <van-action-bar-icon icon="cart-o" text="购物车" to="/cart" />
+      <van-action-bar-icon icon="star" text="已收藏" color="#ff5000" />
+      <van-action-bar-button
+        type="warning"
+        text="加入购物车"
+        @click="onClickAddCart"
+      />
+      <van-action-bar-button type="danger" text="立即购买" />
+    </van-action-bar>
   </div>
 </template>
 
 <script setup>
 import layoutFooter from "@/components/LayoutFooter.vue";
 import commentItem from "@/components/CommentItem.vue";
+import { Toast } from "vant";
 import { ref, computed, reactive } from "vue";
 import { useRouter, onBeforeRouteUpdate } from "vue-router";
+import { useStore } from "vuex";
 import { getProductDetail } from "@/api/product";
+import { postAddCart } from "@/api/cart";
 
+const router = useRouter();
+const store = useStore();
 const { productId } = defineProps({
   productId: {
     type: String,
@@ -124,7 +140,6 @@ const { productId } = defineProps({
   },
 });
 
-const router = useRouter();
 // 返回首页
 const onClickBack = () => {
   return router.push({
@@ -194,6 +209,34 @@ const onClickChoiceTag = (tag, index) => {
 };
 const sku = computed(() => specData.spec.toString());
 const specDetail = computed(() => productValue.value?.[sku.value]);
+
+// 加入购入车
+const onClickAddCart = async () => {
+  if (!store.state.user) {
+    return router.push({
+      name: "login",
+      query: {
+        redirect: router.currentRoute.value.fullPath,
+      },
+    });
+  }
+  if (!specData.show) {
+    return (specData.show = true);
+  }
+  // 添加商品
+  const { data } = await postAddCart({
+    new: "0",
+    uniqueId: specDetail.value.unique,
+    productId,
+    cartNum: specData.buyCount,
+  });
+  if (data.status !== 200) {
+    return Toast(data.msg);
+  }
+  // 加入购物车成功
+  specData.show = false
+  Toast('加入购物车成功!')
+};
 </script>
 <style lang="scss" scoped>
 .product {
@@ -342,6 +385,10 @@ const specDetail = computed(() => productValue.value?.[sku.value]);
         background-color: #fcedeb;
       }
     }
+  }
+  .van-action-bar {
+    z-index: 10000;
+    width: 100%;
   }
 }
 </style>

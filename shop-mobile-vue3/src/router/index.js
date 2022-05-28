@@ -1,3 +1,4 @@
+import store from '@/store/index'
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 // 路由规则
@@ -15,12 +16,10 @@ const routes = [
   {
     name: 'cart',
     path: '/cart',
-    component: () => import('@/views/Cart/index.vue')
-  },
-  {
-    name: 'cart',
-    path: '/cart',
-    component: () => import('@/views/Cart/index.vue')
+    component: () => import('@/views/Cart/index.vue'),
+    meta:{
+      requireAuth:true
+    }
   },
   {
     name: 'category',
@@ -30,17 +29,26 @@ const routes = [
   {
     name: 'order',
     path: '/order',
-    component: () => import('@/views/Order/index.vue')
+    component: () => import('@/views/Order/index.vue'),
+    meta:{
+      requireAuth:true
+    }
   },
   {
     name: 'recommend',
     path: '/recommend',
-    component: () => import('@/views/Recommend/index.vue')
+    component: () => import('@/views/Recommend/index.vue'),
+    meta:{
+      requireAuth:true
+    }
   },
   {
     name: 'user',
     path: '/user',
-    component: () => import('@/views/User/index.vue')
+    component: () => import('@/views/User/index.vue'),
+    meta:{
+      requireAuth:true
+    }
   },
   {
     name: 'product',
@@ -61,4 +69,21 @@ const router = createRouter({
   routes
 })
 
+// 导航守卫
+router.beforeEach(to => {
+  // 不需要权限
+  if(!to.meta.requireAuth) {
+    return true
+  }
+  // 校验登录状态
+  if(!store.state.user || !window.localStorage.getItem('USER_TOKEN')){
+    // 跳转登录页
+    return {
+      name:'login',
+      query:{
+        redirect:to.fullPath
+      }
+    }
+  }
+})
 export default router
