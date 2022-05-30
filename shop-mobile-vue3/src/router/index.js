@@ -35,6 +35,15 @@ const routes = [
     }
   },
   {
+    name: 'order-detail',
+    path: '/order-detail',
+    component: () => import('@/views/OrderDetail/index.vue'),
+    props:true,
+    meta:{
+      requireAuth:true
+    }
+  },
+  {
     name: 'recommend',
     path: '/recommend',
     component: () => import('@/views/Recommend/index.vue'),
@@ -61,7 +70,13 @@ const routes = [
     path: '/comment/:productId',
     component: () => import('@/views/Comment/index.vue'),
     props:true
-  },
+  }, 
+  {
+    name: 'address',
+    path: '/address',
+    component: () => import('@/views/Address/index.vue'),
+    props:true,
+  }, 
 ]
 
 const router = createRouter({
@@ -76,7 +91,7 @@ router.beforeEach(to => {
     return true
   }
   // 校验登录状态
-  if(!store.state.user || !window.localStorage.getItem('USER_TOKEN')){
+  if(!store.state.user.token || !window.localStorage.getItem('USER_TOKEN')){
     // 跳转登录页
     return {
       name:'login',

@@ -7,10 +7,10 @@ const request = axios.create({
 
 // 请求拦截器
 request.interceptors.request.use(function (config) {
-  const { user } = store.state;
-  if(user) {
+  const { token } = store.state.user;
+  if(token) {
     // 设置请求头
-    config.headers.Authorization = 'Bearer ' + user
+    config.headers.Authorization = 'Bearer ' + token
   }
   return config;
 });

@@ -95,7 +95,7 @@ const onSubmit = async () => {
   if (data.status !== 200) {
     return Toast("验证码不正确");
   }
-  store.commit("setUser", data.data.token);
+  store.commit("user/setUser", data.data.token);
   router.push(route.query.redirect ?? '/user');
 };
 

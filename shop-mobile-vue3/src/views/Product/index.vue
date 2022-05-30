@@ -212,7 +212,7 @@ const specDetail = computed(() => productValue.value?.[sku.value]);
 
 // 加入购入车
 const onClickAddCart = async () => {
-  if (!store.state.user) {
+  if (!store.state.user.token) {
     return router.push({
       name: "login",
       query: {

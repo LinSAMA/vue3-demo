@@ -10,7 +10,7 @@
   <van-empty v-else description="购物车空空如也~" />
 
   <van-submit-bar
-    :price="store.getters.totalPrice * 100"
+    :price="store.getters['cart/totalPrice'] * 100"
     button-text="去结算"
     @submit="onSubmit"
   >
@@ -24,19 +24,21 @@ import layoutFooter from "@/components/LayoutFooter.vue";
 import CartItem from "./components/CartItem.vue";
 import { getCartList } from "@/api/cart";
 import { useStore } from "vuex";
+import { useRouter } from "vue-router";
 import { computed, nextTick } from "vue";
 
 const store = useStore();
+const router = useRouter()
 
 const initCartData = async () => {
   const { data } = await getCartList();
   if (data.status !== 200) return;
-  store.commit("clearCart");
+  store.commit("cart/clearCart");
 
   await nextTick();
 
   data.data.valid.forEach((item) => {
-    store.commit("addToCart", {
+    store.commit("cart/addToCart", {
       id: item.id,
       checked: true,
       count: item.cart_num,
@@ -49,14 +51,23 @@ const initCartData = async () => {
   });
 };
 initCartData();
-const cartList = computed(() => store.state.cartList);
+const cartList = computed(() => store.state.cart.cartList);
 const isEmpty = computed(() => cartList.value.length !== 0);
 const checkedAll = computed({
-  get: () => store.getters.checkedAll,
+  get: () => store.getters['cart/checkedAll'],
   set: (newChecked) => {
-    store.commit("checkedAll", { checked: newChecked });
+    store.commit("cart/checkedAll", { checked: newChecked });
   },
 });
+
+const onSubmit = () => {
+  router.push({
+    name:'order-detail',
+    params: {
+      cartId:store.getters['cart/checkedItem'].map(item=>item.checked).toString()
+    }
+  })
+};
 </script>
 <style lang="scss" scoped>
 .van-nav-bar {

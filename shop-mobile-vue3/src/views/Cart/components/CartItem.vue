@@ -49,13 +49,13 @@ const onClickToPro = () => {
 const itemChecked = computed({
   get: () => itemData.checked,
   set: (newChecked) => {
-    store.commit("checkedChange", { checked: newChecked, id: itemData.id });
+    store.commit("cart/checkedChange", { checked: newChecked, id: itemData.id });
   },
 });
 const itemCount = computed({
   get: () => itemData.count,
   set: (newCount) => {
-    store.dispatch("countChange", { count: newCount, id: itemData.id });
+    store.dispatch("cart/countChange", { count: newCount, id: itemData.id });
   },
 });
 </script>
