@@ -34,34 +34,122 @@
     <!-- 商品列表 -->
     <div class="product-list">
       <van-cell-group>
-        <van-cell title="共2件"></van-cell>
+        <van-cell :title="cartItem"></van-cell>
       </van-cell-group>
       <van-cell-group>
-        <van-cell class="product">
-          <img
-            src="https://shop.fed.lagounews.com/uploads/attach/2021/09/20210902/7c3f3d5228708fd5f41e1733b8624d61.jpg"
-            alt=""
-          />
+        <van-cell
+          class="product"
+          v-for="(item, index) in cartInfo"
+          :key="item + index"
+        >
+          <img :src="item.productInfo.image" alt="" />
           <div class="info">
-            <p class="title">这里是标题</p>
-            <p class="price">￥4545.5</p>
+            <p class="title" v-text="item.productInfo.store_name"></p>
+            <p class="price">￥{{ item.truePrice }}</p>
           </div>
-          <span class="num">x3</span>
+          <span class="num">x{{ item.cart_num }}</span>
         </van-cell>
       </van-cell-group>
     </div>
   </div>
+  <!-- 提交订单 -->
   <van-submit-bar
     label="订单总计："
-    :price="3050"
+    :price="totalPrice"
     button-text="立即付款"
-    @submit="onSubmit"
+    @submit="showPayPanel = true"
   />
+  <!-- 弹出付款区域 -->
+  <van-action-sheet
+    v-model:show="showPayPanel"
+    cancel-text="取消"
+    close-on-click-action
+    @cancel="onCancel"
+  >
+    <template #default>
+      <van-radio-group v-model="payMethod">
+        <van-cell-group>
+          <!-- 微信支付 -->
+          <van-cell
+            clickable
+            title="微信支付"
+            label="微信快捷支付"
+            @click="payMethod = 'wechat'"
+            size="large"
+            center
+          >
+            <template #icon>
+              <van-icon
+                name="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fpic.6186.cn%2Fd%2Ffile%2Ftitlepic%2F20191121%2F2egxjxnbkty.jpg&refer=http%3A%2F%2Fpic.6186.cn&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1656520272&t=17162b9fd1c23b1d725823f38abb1e42"
+                size="30"
+                :style="{ marginRight: '12px' }"
+              ></van-icon>
+            </template>
+            <template #right-icon>
+              <van-radio name="wechat" checked-color="#ee0a24"></van-radio>
+            </template>
+          </van-cell>
+          <!-- 支付宝支付 -->
+          <van-cell
+            clickable
+            title="支付宝"
+            label="支付宝快捷支付"
+            @click="payMethod = 'alipay'"
+            size="large"
+            center
+          >
+            <template #icon>
+              <van-icon
+                name="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.ixintu.com%2Fdownload%2Fjpg%2F201909%2F490cbe1713be2a188a0beb9a06bcc8ad.jpg%21con&refer=http%3A%2F%2Fimg.ixintu.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1656520519&t=ccae8c43e6c868d2ec6671baa3272e80"
+                size="30"
+                :style="{ marginRight: '12px' }"
+              ></van-icon>
+            </template>
+            <template #right-icon>
+              <van-radio name="alipay" checked-color="#ee0a24"></van-radio>
+            </template>
+          </van-cell>
+          <!-- 余额支付 -->
+          <van-cell
+            clickable
+            title="余额支付"
+            :label="`可用余额为：${yue}元`"
+            @click="payMethod = 'yue'"
+            size="large"
+            center
+          >
+            <template #icon>
+              <van-icon
+                name="gold-coin"
+                color="#ff9900"
+                size="30"
+                :style="{ marginRight: '12px' }"
+              ></van-icon>
+            </template>
+            <template #right-icon>
+              <van-radio name="yue" checked-color="#ee0a24"></van-radio>
+            </template>
+          </van-cell>
+          <van-cell>
+            <van-button round type="danger" block @click="onClickPay"
+              >去支付</van-button
+            >
+          </van-cell>
+        </van-cell-group>
+      </van-radio-group>
+    </template>
+  </van-action-sheet>
 </template>
 <script setup>
-import { getOrderList, getAddressList, postOrderConfirm } from "@/api/order";
+import {
+  getOrderList,
+  getAddressList,
+  postOrderConfirm,
+  postCreateOrder,
+} from "@/api/order";
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
+import { Toast } from "vant";
 
 const router = useRouter();
 
@@ -99,6 +187,10 @@ initOrderInfo();
 
 // 计算属性
 const cartInfo = computed(() => orderConfirmData.value?.cartInfo);
+const cartItem = computed(() => `共${cartInfo.value?.length || 0}件`);
+const totalPrice = computed(
+  () => (orderConfirmData.value?.priceGroup?.totalPrice || 0) * 100
+);
 const isEmpty = computed(() => addressList.value.length === 0);
 
 // 方法
@@ -122,18 +214,18 @@ const covertData = (data) => {
     return temp;
   });
 };
-
+// 地址弹窗
 const onClickPopup = () => {
   popupStatus.value = true;
 };
-
+// 关闭地址弹窗
 const changeAddress = (item) => {
   // 更改弹出层显示状态
   popupStatus.value = false;
   // 更新当前显示的数据
   currentAddress.value = item;
 };
-
+// 跳转新增/编辑地址
 const onclickAddAddress = () => {
   router.push({
     name: "address",
@@ -142,8 +234,27 @@ const onclickAddAddress = () => {
     },
   });
 };
+
+const showPayPanel = ref(false);
+const payMethod = ref("yue");
+const yue = computed(() => orderConfirmData.value?.userInfo.now_money || 0);
+const onClickPay = async () => {
+  const { data } = await postCreateOrder(orderConfirmData.value.orderKey, {
+    addressId: currentAddress.value.id,
+    payType: payMethod.value,
+  });
+  if (data.status !== 200) return;
+  // 提示成功并跳转
+  Toast.success('支付成功，自动跳转登录页...')
+  router.push({
+    name:'order'
+  })
+};
+
 const onAdd = () => Toast("新增地址");
 const onEdit = (item, index) => Toast("编辑地址:" + index);
+
+const onCancel = () => Toast("取消");
 </script>
 <style lang="scss" scoped>
 .van-nav-bar {

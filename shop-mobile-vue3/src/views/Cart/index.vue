@@ -64,7 +64,7 @@ const onSubmit = () => {
   router.push({
     name:'order-detail',
     params: {
-      cartId:store.getters['cart/checkedItem'].map(item=>item.checked).toString()
+      cartId:store.getters['cart/checkedItem'].map(item => item.id).toString()
     }
   })
 };
